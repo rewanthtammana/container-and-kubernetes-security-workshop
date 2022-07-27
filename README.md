@@ -16,6 +16,8 @@
 
 ### Sample attacks & hacks across the globe
 
+
+
 ### Live session on how it's done
 
 shodan.io
@@ -36,9 +38,11 @@ apk add docker
 apk add libcap
 capsh --print
 
-https://crontab.guru/
+You can run privileged containers, containers with hostpid, hostipc, etc. You can gain access to the host machine, run things around, run crypto miners silently in the background, etc.
 
-nsenter to create namespaces in linux, 
+Or leverage capablities like  CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_NET_ADMIN, 
+
+nsenter to create namespaces in linux
 
 ### Container?
 
@@ -69,6 +73,20 @@ touch /abcd/etc/podmanuser
 Checkf
 
 ### Capablities
+
+https://command-not-found.com/capsh
+
+```bash
+capsh --print
+```
+
+```bash
+grep Cap /proc/self/status
+capsh --decode=<decodeBnd>
+```
+
+CAP_SYS_ADMIN - Most powerful capability. It allows to manage cgroups of the system, thereby allowing you to control system resources
+https://blog.trailofbits.com/2019/07/19/understanding-docker-container-escapes/
 
 
 ## Notes
