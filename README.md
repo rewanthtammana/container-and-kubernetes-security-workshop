@@ -380,6 +380,35 @@ sudo dpkg -i dockle.deb && rm dockle.deb
 dockle madhuakula/k8s-goat-users-repo
 ```
 
+### Runtime security
+
+Falco
+
+https://github.com/falcosecurity/falco
+
+You can try on Killercoda!
+
+```bash
+curl -s https://falco.org/repo/falcosecurity-3672BA8F.asc | apt-key add -
+echo "deb https://download.falco.org/packages/deb stable main" | tee -a /etc/apt/sources.list.d/falcosecurity.list
+apt-get update -y
+apt-get -y install linux-headers-$(uname -r)
+apt-get install -y falco
+falco
+```
+
+```bash
+docker run --name nginx --rm -it -d nginx
+```
+
+```bash
+docker exec -it nginx bash
+cat /etc/shadow
+```
+
+
+https://github.com/developer-guy/awesome-falco
+
 ### NIST framework for containers
 
 https://nvlpubs.nist.gov/nistpubs/specialpublications/nist.sp.800-190.pdf
@@ -505,33 +534,6 @@ kubescape scan
 kubescape scan framework nsa
 kubescape scan framework nsa -v
 ```
-
-<!-- ### Runtime security
-
-Falco
-
-https://github.com/falcosecurity/falco
-
-Install helm & falco
-
-```bash
-wget https://get.helm.sh/helm-v3.9.2-linux-amd64.tar.gz
-tar xvf helm-v3.9.2-linux-amd64.tar.gz
-sudo mv linux-amd64/helm /usr/local/bin
-helm repo add falcosecurity https://falcosecurity.github.io/charts
-helm repo update
-helm install falco falcosecurity/falco
-watch -n 0.1 kubectl get po
-kubectl logs -f -l app.kubernetes.io/instance=falco
-```
-
-```bash
-kubectl run nginx --image nginx
-kubectl exec -it nginx bash
-``` 
-https://github.com/developer-guy/awesome-falco
-
--->
 
 ### More
 
