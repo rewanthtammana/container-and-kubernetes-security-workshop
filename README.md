@@ -48,6 +48,14 @@ Or leverage capablities like  CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_
 
 nsenter to create namespaces in linux
 
+### Attack Mitre framework
+
+We cannot discuss all stages in one session. We will try to touch one topic from each section mentioned below!
+
+![https://www.weave.works/blog/mitre-attack-matrix-for-kubernetes](https://www.weave.works/blog/mitre-attack-matrix-for-kubernetes)
+
+https://www.weave.works/blog/mitre-attack-matrix-for-kubernetes
+
 ### Container?
 
 https://github.com/rewanthtammana/containers-from-scratch/blob/master/main.go#L32
@@ -442,33 +450,6 @@ https://www.linkedin.com/posts/rewanthtammana_compromising-organizational-system
 
 If the database connection to the end-user is blocked, then the attack would have never happened.
 
-### Runtime security
-
-Falco
-
-https://github.com/falcosecurity/falco
-
-Install helm & falco
-
-```bash
-wget https://get.helm.sh/helm-v3.9.2-linux-amd64.tar.gz
-tar xvf helm-v3.9.2-linux-amd64.tar.gz
-sudo mv linux-amd64/helm /usr/local/bin
-helm repo add falcosecurity https://falcosecurity.github.io/charts
-helm repo update
-helm install falco falcosecurity/falco
-watch -n 0.1 kubectl get po
-kubectl logs -f -l app.kubernetes.io/instance=falco
-```
-
-```bash
-kubectl run nginx --image nginx
-kubectl exec -it nginx bash
-```
-
-
-https://github.com/developer-guy/awesome-falco
-
 ### Kyverno
 
 Demonstrate on how you can control the deployment configuration
@@ -524,3 +505,36 @@ kubescape scan
 kubescape scan framework nsa
 kubescape scan framework nsa -v
 ```
+
+<!-- ### Runtime security
+
+Falco
+
+https://github.com/falcosecurity/falco
+
+Install helm & falco
+
+```bash
+wget https://get.helm.sh/helm-v3.9.2-linux-amd64.tar.gz
+tar xvf helm-v3.9.2-linux-amd64.tar.gz
+sudo mv linux-amd64/helm /usr/local/bin
+helm repo add falcosecurity https://falcosecurity.github.io/charts
+helm repo update
+helm install falco falcosecurity/falco
+watch -n 0.1 kubectl get po
+kubectl logs -f -l app.kubernetes.io/instance=falco
+```
+
+```bash
+kubectl run nginx --image nginx
+kubectl exec -it nginx bash
+``` 
+https://github.com/developer-guy/awesome-falco
+
+-->
+
+### More
+
+There are more things like falco (runtime security), apparmor, selinux, mutating webhooks, seccomp & lot more.
+
+https://blog.rewanthtammana.com/creating-malicious-admission-controllers
