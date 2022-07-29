@@ -1,4 +1,4 @@
-# docker-kubernetes-security-101
+# container-security-workshop-notes
 
 ## Agenda
 
