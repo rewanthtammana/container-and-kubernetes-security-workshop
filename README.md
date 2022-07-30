@@ -16,13 +16,25 @@
 
 ### Sample attacks & hacks across the globe
 
+Kubernetes hacks doesn't have to be just a misconfiguration in kubernetes. Any vulnerability in the applications running on Kubernetes can also lead to compromise of the entire system. A few hacks are referenced below:
 
-Demo of how security hacks are done!
-shodan + script (hide) + enumeration + recon + live hacking (scope)
+<!-- Demo of how security hacks are done!
+shodan + script (hide) + enumeration + recon + live hacking (scope) -->
 
+https://www.bleepingcomputer.com/news/security/over-900-000-kubernetes-instances-found-exposed-online/
+https://www.wired.com/story/cryptojacking-tesla-amazon-cloud/
+https://www.crowdstrike.com/blog/cr8escape-new-vulnerability-discovered-in-cri-o-container-engine-cve-2022-0811/
+https://sysdig.com/blog/exposed-prometheus-exploit-kubernetes-kubeconeu/
+https://thehackernews.com/2022/05/yes-containers-are-terrific-but-watch.html
+https://www.trendmicro.com/vinfo/es/security/news/cybercrime-and-digital-threats/tesla-and-jenkins-servers-fall-victim-to-cryptominers
+https://thehackernews.com/2022/07/over-1200-npm-packages-found-involved.html
+https://threatpost.com/380k-kubernetes-api-servers-exposed-to-public-internet/179679/
+https://www.bleepingcomputer.com/news/security/jenkins-discloses-dozens-of-zero-day-bugs-in-multiple-plugins/
 
 
 ### Live session on how it's done
+
+Everyday you see many hacks happening on the internet but you might not be sure how it happens. I will show a demonstration on how it's done!
 
 shodan.io
 
@@ -44,15 +56,15 @@ capsh --print
 
 You can run privileged containers, containers with hostpid, hostipc, etc. You can gain access to the host machine, run things around, run crypto miners silently in the background, etc.
 
-Or leverage capablities like  CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_NET_ADMIN, 
+Or leverage capablities like  CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_NET_ADMIN, etc.
 
-nsenter to create namespaces in linux
+You can also use tools like `nsenter` to create namespaces in linux
 
 ### Attack Mitre framework
 
 We cannot discuss all stages in one session. We will try to touch one topic from each section mentioned below!
 
-![https://www.weave.works/blog/mitre-attack-matrix-for-kubernetes](https://www.weave.works/blog/mitre-attack-matrix-for-kubernetes)
+![https://images.contentstack.io/v3/assets/blt300387d93dabf50e/blt79d91d9e7404f336/629d981961670f0fb5dd1161/MITTRE_ATTACK_Metric.png](https://images.contentstack.io/v3/assets/blt300387d93dabf50e/blt79d91d9e7404f336/629d981961670f0fb5dd1161/MITTRE_ATTACK_Metric.png)
 
 https://www.weave.works/blog/mitre-attack-matrix-for-kubernetes
 
@@ -62,23 +74,59 @@ https://github.com/rewanthtammana/containers-from-scratch/blob/master/main.go#L3
 
 ### What does it mean to be root inside a container?
 
-It's just an isolation within your same system. 
+You can run these on Killercoda!
+
+Root on host machine & root inside container
 
 ```bash
-adduser nonroot
-sudo groupadd docker
-sudo usermod -aG docker nonroot
+$ docker run --rm -it nginx bash
+# sleep 1d
+$ ps -ef | grep sleep
+```
+
+Non-root on host machine & root inside container
+
+```bash
+$ su - ubuntu
+$ sudo chown ubuntu:ubuntu /var/run/docker.sock
+$ docker run --rm -it nginx bash
+# sleep 2d
+$ ps -ef | grep sleep
+```
+
+Root on host machine & non-root inside container
+
+```bash
+$ docker run --rm --user 1000:1000 -it nginx bash
+# sleep 3d
+$ ps -ef | grep sleep
+```
+
+Non-root on host machine & non-root inside container
+
+```bash
+$ su - ubuntu
+$ sudo chown ubuntu:ubuntu /var/run/docker.sock
+$ docker run --rm --user ${UID}:${UID} -it nginx bash
+# sleep 4d
+$ ps -ef | grep sleep
+```
+
+Since docker daemon runs as root, eventually all the processes triggered by it run as root. Another example -
+
+```bash
+echo "I'm root" >> /tmp/groot.txt
+chmod 0600 /tmp/groot.txt
+su - ubuntu
+cat /tmp/groot.txt
 ```
 
 ```bash
-docker run --rm -it -v /:/abcd ubuntu bash
-touch /abcd/etc/dockeruser
+docker run --rm -it -v /tmp/groot.txt:/tmp/groot.txt nginx cat /tmp/groot.txt
+docker run --rm -it -u 1000:1000 -v /tmp/groot.txt:/tmp/groot.txt nginx cat /tmp/groot.txt
 ```
 
-```bash
-podman run --rm -it -v /:/abcd ubuntu bash
-touch /abcd/etc/podmanuser
-```
+
 
 ### Privileged container
 
@@ -101,8 +149,8 @@ How to identify if a container is privileged or normal? There are many ways!
 
 1. Check for mount permissions & masking
     ```bash
-    mount | grep 'ro'
-    mount  | grep /proc.*tmpfs
+    mount | grep 'ro,'
+    mount | grep /proc.*tmpfs
     ```
 1. Linux capablities
 1. Seccomp - Limit the syscalls
@@ -152,13 +200,19 @@ $ capsh --decode=<value>
 ```
 
 CapEff: The effective capability set represents all capabilities the process is using at the moment.
+
 CapPrm: The permitted set includes all capabilities a process may use.
+
 CapInh: Using the inherited set all capabilities that are allowed to be inherited from a parent process can be specified.
+
 CapBnd: With the bounding set its possible to restrict the capabilities a process may ever receive.
+
 CapAmb: The ambient capability set applies to all non-SUID binaries without file capabilities.
 
 CAP_CHOWN - allows the root use to make arbitrary changes to file UIDs and GIDs
+
 CAP_DAC_OVERRIDE - allows the root user to bypass kernel permission checks on file read, write and execute operations.
+
 CAP_SYS_ADMIN - Most powerful capability. It allows to manage cgroups of the system, thereby allowing you to control system resources
 
 ```bash
@@ -226,10 +280,9 @@ One of the results -> https://github.com/domwood/kiwi-kafka/blob/f47f91f5611f2c1
 
 docker-compose up
 
-
 ### hostPid
 
-You will have able to access processes running on the host machine. So, you will get access to lots of privileged information.
+You will have able to access processes running on the same PID namespace. So, you will get access to lots of privileged information.
 
 ### hostIpc
 
@@ -237,9 +290,9 @@ Not very dangerous but if any process uses the IPC (Inter Process Communication)
 
 ### hostNetwork
 
-The container will be using the network interface same as host machine. No special IP allocation or something. Since, you have access to the main network interface, you can dump/intercept traffic ;)
+The container will be using the network interface same as host machine. No special IP allocation or something. Since, you have access to the main network interface, you can dump/intercept traffic that's going through the host machine ;)
 
-### Trivy docker images
+### Trivy - Scan docker images
 
 https://github.com/aquasecurity/trivy
 
@@ -345,6 +398,8 @@ docker stats withlimits
 ```
 
 ### Private registry
+
+Another scenario is kubernetes goat!
 
 You can use tools like dirbuster/gobuster to brute force the list of pages
 
@@ -537,6 +592,11 @@ kubescape scan framework nsa -v
 
 ### More
 
-There are more things like falco (runtime security), apparmor, selinux, mutating webhooks, seccomp & lot more.
+There are more things like falco (runtime security), apparmor, selinux, mutating webhooks, seccomp, service mesh, tracing, & lot more.
 
 https://blog.rewanthtammana.com/creating-malicious-admission-controllers
+
+Further practice on container internals & security
+
+https://contained.af/
+
