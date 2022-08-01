@@ -104,7 +104,15 @@ We cannot discuss all stages in one session. We will try to touch one topic from
 
 ### Container?
 
-Isolation in the same system with unique namespaces - PID, User, Mount, Net, UTS, IPC, Cgroup
+Isolation in the same system with unique namespaces.
+
+* PID    - Isolation of process ids
+* User   - Isolation of users & UIDs
+* Mount  - Isolation of mount points
+* Net    - Isolation of networking interfaces & environment
+* UTS    - Isolation of hostname
+* IPC    - Isolation of IPC traffic
+* Cgroup - Isolation of cgroups (memory & cpu)
 
 https://github.com/rewanthtammana/containers-from-scratch/blob/master/main.go#L32
 
