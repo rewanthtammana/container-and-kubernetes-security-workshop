@@ -1,4 +1,4 @@
-# container-security-workshop-notes
+# container-and-kubernetes-security-workshop-notes
 
 ## About me
 
