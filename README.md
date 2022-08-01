@@ -742,3 +742,7 @@ For further reading, you can check my article on how an attacker can gain persis
 
 Further practice on container internals & security - https://contained.af/
 
+## Follow me
+
+* https://www.linkedin.com/in/rewanthtammana
+* https://twitter.com/rewanthtammana
