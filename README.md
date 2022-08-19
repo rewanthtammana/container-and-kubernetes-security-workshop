@@ -53,7 +53,7 @@ find / -name docker.sock
 apk add docker
 ```
 
-We can run privileged containers, containers with hostpid, hostipc, etc. We can gain access to the host machine, run things around, run crypto miners silently in the background, and lot more. We can even leverage capablities like CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_NET_ADMIN, etc.
+We can run privileged containers, containers with hostpid, hostipc, etc. We can gain access to the host machine, run things around, run crypto miners silently in the background, and lot more. We can even leverage capabilities like CAP_SYS_ADMIN, CAP_SYS_MODULE, CAP_SYS_RAWIO, CAP_NET_ADMIN, etc.
 
 You can also use tools like `nsenter` to create namespaces in linux or even hook into one of the parent processes running on the host & break out of the container
 
@@ -236,7 +236,7 @@ docker run --rm --privileged -it ubuntu bash
     mount | grep 'ro,'
     mount | grep /proc.*tmpfs
     ```
-1. Linux capablities - we will see more about it in the next section!
+1. Linux capabilities - we will see more about it in the next section!
     ```bash
     capsh --print
     ```
@@ -245,7 +245,7 @@ docker run --rm --privileged -it ubuntu bash
     grep Seccomp /proc/1/status
     ```
 
-### Capablities
+### Capabilities
 
 https://command-not-found.com/capsh
 https://man7.org/linux/man-pages/man7/capabilities.7.html
